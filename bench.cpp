@@ -77,7 +77,7 @@ int main(int argc, char * argv[])
 
   for (;;) {
     if(frame_idx>=loops)break;
-    cap >> frame;
+    //cap >> frame;
     if(frame.rows==0 || frame.cols==0)break;
     // update the tracking result
     t1 = cv::getTickCount();
