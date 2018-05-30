@@ -42,7 +42,7 @@ struct staple_cfg
     int hog_scale_cell_size = 4;         // Default DSST=4
     double learning_rate_scale = 0.025;
     double scale_sigma_factor = 1/4.0;
-    int num_scales = 33;
+    int num_scales = 25;
     double scale_model_factor = 1.0;
     double scale_step = 1.02;
     double scale_model_max_area = 16*16;

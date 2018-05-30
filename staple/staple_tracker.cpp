@@ -505,6 +505,20 @@ void STAPLE_TRACKER::tracker_staple_initialize(const cv::Mat &im, cv::Rect_<floa
     if (n == 1) {
         cfg.grayscale_sequence = true;
     }
+    /*
+    float w1 = im.size().width;
+    float h1 = im.size().height;
+    w1 /= cfg.resize_rate;
+    h1 /= cfg.resize_rate;
+
+    new_sz.width  = round(w1);
+    new_sz.height = round(h1);
+    cv::resize(im,im_resize,new_sz);
+    region.x /= cfg.resize_rate;
+    region.y /= cfg.resize_rate;
+    region.width  /= cfg.resize_rate;
+    region.height /= cfg.resize_rate;
+    */
 
     // xxx: only support 3 channels, TODO: fix updateHistModel
     //assert(!cfg.grayscale_sequence);
@@ -553,7 +567,7 @@ void STAPLE_TRACKER::tracker_staple_initialize(const cv::Mat &im, cv::Rect_<floa
     y_fftw = yv[0].clone();
     fftTool(y_fftw,yf_fftw);
 
-    cv::dft(y, yf);
+    //cv::dft(y, yf);
 
     // SCALE ADAPTATION INITIALIZATION
     if (cfg.scale_adaptation) {
@@ -787,7 +801,41 @@ void STAPLE_TRACKER::getSubwindowFloor(const cv::Mat &im, cv::Point_<float> cent
 // code from DSST
 void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> centerCoor, cv::Mat &output)
 {
+    //getMaxPatch
+    cv::Mat im_max_patch;
+    cv::Point_<float> patch_centerCoor;
+    float scale_resize_rate;
+    if(target_sz.width<45)
+        scale_resize_rate = 1.0;
+    else if (target_sz.width>=45 && target_sz.width<60)
+        scale_resize_rate = 1.25;
+    else if (target_sz.width>=60 && target_sz.width<80)
+        scale_resize_rate = 1.5;
+    else if (target_sz.width>=80 && target_sz.width<120)
+        scale_resize_rate = 2;
+    else if (target_sz.width>=120)
+        scale_resize_rate = 3;
+    {
+        cv::Size_<float> max_patch_sz;
+        max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
+        max_patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(0));
+
+        patch_centerCoor.x = max_patch_sz.width/2;
+        patch_centerCoor.y = max_patch_sz.height/2;
+
+        cv::Size_<float> new_sz;
+        float w1 = max_patch_sz.width;
+        float h1 = max_patch_sz.height;
+
+        w1 /= scale_resize_rate;
+        h1 /= scale_resize_rate;
+        new_sz.width  = round(w1);
+        new_sz.height = round(h1);
+        getSubwindowFloor(im, centerCoor, new_sz, max_patch_sz, im_max_patch);
+    }
+
     float *OUTPUT = NULL;
+    float *OUTPUT_real = NULL;
     int w = 0;
     int h = 0;
     int ch = 0;
@@ -803,11 +851,13 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
 
     for (int s = 0; s < cfg.num_scales; s++) {
 
-        patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s));
-        patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s));
-        
+        //patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s));
+        //patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s));
+        patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
+        patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
+                
         if(patch_sz != last_sz){
-            getSubwindowFloor(im, centerCoor, scale_model_sz, patch_sz, im_patch_resized);
+            getSubwindowFloor(im_max_patch, patch_centerCoor, scale_model_sz, patch_sz, im_patch_resized);
             // extract scale features
             fhog31(temp, im_patch_resized, im_patch_resized_tmp1, im_patch_resized_tmp2, cfg.hog_cell_size, 9);
             last_sz = patch_sz;
@@ -821,7 +871,8 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
             total = w*h*ch;
 
             //OUTPUT = new float[cfg.num_scales*total*2](); // xxx
-            output.create(total,cfg.num_scales, CV_32FC2);
+            //output.create(total,cfg.num_scales, CV_32FC2);
+            output.create(total,cfg.num_scales, CV_32FC1);
             OUTPUT = (float *)output.data;
         }
 
@@ -837,8 +888,9 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
                 for (int k = 0; k < tempch; k++) {
                     int off = j*tempw*ch+i*tempch+k;
 
-                    OUTPUT[(count*cfg.num_scales + s)*2 + 0] = ((float *)temp.data)[off] * scale_window.at<float>(s);
-                    OUTPUT[(count*cfg.num_scales + s)*2 + 1] = 0.0;
+                    //OUTPUT[(count*cfg.num_scales + s)*2 + 0] = ((float *)temp.data)[off] * scale_window.at<float>(s);
+                    //OUTPUT[(count*cfg.num_scales + s)*2 + 1] = 0.0;
+                    OUTPUT[count*cfg.num_scales + s] = ((float *)temp.data)[off] * scale_window.at<float>(s);
                     count++;
                 }
     }
@@ -977,9 +1029,11 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
 
         xtf2.copyTo(xtf2_old);
         xtfr2.copyTo(xtfr2_old);
+
+        updateHistModel(false, im_patch_bg, cfg.learning_rate_pwp);
     }
 
-    //updateHistModel(false, im_patch_bg, cfg.learning_rate_pwp);
+
 
 }
     // SCALE UPDATE
@@ -989,8 +1043,7 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
         getScaleSubwindow(im, pos, im_patch_scale);
 
         cv::Mat xsf;
-        cv::dft(im_patch_scale, xsf, cv::DFT_ROWS);
-
+        cv::dft(im_patch_scale, xsf, cv::DFT_ROWS|cv::DFT_COMPLEX_OUTPUT);
         // new_sf_num = bsxfun(@times, ysf, conj(xsf));
         // new_sf_den = sum(xsf .* conj(xsf), 1);
 
@@ -1037,6 +1090,7 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
         }
     }
 
+    /*
     // update bbox position
     if (first) {
         rect_position.x = pos.x - target_sz.width/2;
@@ -1044,7 +1098,7 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
         rect_position.width = target_sz.width;
         rect_position.height = target_sz.height;
     }
-
+    */
     frameno += 1;
 }
 
@@ -1473,7 +1527,7 @@ cv::Rect STAPLE_TRACKER::tracker_staple_update(const cv::Mat &im)
         getScaleSubwindow(im, pos, im_patch_scale);
 
         cv::Mat xsf;
-        cv::dft(im_patch_scale, xsf, cv::DFT_ROWS);
+        cv::dft(im_patch_scale, xsf, cv::DFT_ROWS|cv::DFT_COMPLEX_OUTPUT);
 
         // im_patch_scale = getScaleSubwindow(im, pos, base_target_sz, scale_factor * scale_factors, scale_window, scale_model_sz, p.hog_scale_cell_size);
         // xsf = fft(im_patch_scale,[],2);
