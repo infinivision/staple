@@ -36,6 +36,7 @@ struct staple_cfg
     double merge_factor = 0.3;          // fixed interpolation factor - how to linearly combine the two responses
     const char * merge_method = "const_factor";
     bool den_per_channel = false;
+    float bg_padding_rate = 0.5;
 
     // scale related
     bool scale_adaptation = true;

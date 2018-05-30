@@ -50,8 +50,8 @@ void STAPLE_TRACKER::initializeAllAreas(const cv::Mat &im)
     // we want a regular frame surrounding the object
     double avg_dim = (cfg.target_sz.width + cfg.target_sz.height) / 2.0;
 
-    bg_area.width = round(cfg.target_sz.width + avg_dim);
-    bg_area.height = round(cfg.target_sz.height + avg_dim);
+    bg_area.width  = round(cfg.target_sz.width  + avg_dim * cfg.bg_padding_rate);
+    bg_area.height = round(cfg.target_sz.height + avg_dim * cfg.bg_padding_rate);
 
     // pick a "safe" region smaller than bbox to avoid mislabeling
     fg_area.width = round(cfg.target_sz.width - avg_dim * cfg.inner_padding);
@@ -835,7 +835,6 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
     }
 
     float *OUTPUT = NULL;
-    float *OUTPUT_real = NULL;
     int w = 0;
     int h = 0;
     int ch = 0;
@@ -1580,8 +1579,8 @@ cv::Rect STAPLE_TRACKER::tracker_staple_update(const cv::Mat &im)
 
         float avg_dim = (target_sz.width + target_sz.height)/2.0;
 
-        bg_area.width= round(target_sz.width + avg_dim);
-        bg_area.height = round(target_sz.height + avg_dim);
+        bg_area.width  = round(target_sz.width  + avg_dim * cfg.bg_padding_rate);
+        bg_area.height = round(target_sz.height + avg_dim * cfg.bg_padding_rate);
 
         (bg_area.width > im.cols) && (bg_area.width = im.cols - 1);
         (bg_area.height > im.rows) && (bg_area.height = im.rows - 1);
