@@ -46,15 +46,12 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
-  Mat frame1,frame2;
+  Mat frame;
   // get bounding box
-  cap >> frame1;
-  cap >> frame2;
-  //resize(frame1,frame2,frame1.size()/2);
+  cap >> frame;
   //cv::namedWindow("tracker",WINDOW_NORMAL);
   //cv::resizeWindow("tracker",800,640);
-  Rect_<float> roi= selectROI("tracker", frame1, true, false);
-  //Rect_<float> roi= selectROI("tracker", frame2, true, false);
+  Rect_<float> roi= selectROI("tracker", frame, true, false);
   //quit if ROI was not selected
   if(roi.width==0 || roi.height==0)
     return 0;
@@ -71,8 +68,8 @@ int main(int argc, char * argv[])
   // initialize the tracker
   int64 t1 = cv::getTickCount();
 
-  staple.tracker_staple_initialize(frame2, roi);
-  staple.tracker_staple_train(frame2, true);  
+  staple.tracker_staple_initialize(frame, roi);
+  staple.tracker_staple_train(frame, true);  
   int64 t2 = cv::getTickCount();
   int64 tick_counter = t2 - t1;
   int frame_idx = 1;
@@ -103,38 +100,36 @@ int main(int argc, char * argv[])
       }
     }
     // get frame from the video
-    cap >> frame1;
-    cap >> frame2;
+    cap >> frame;
     // stop the program if no more images
-    if(frame1.rows==0 || frame1.cols==0)
+    if(frame.rows==0 || frame.cols==0)
       break;
     if(frame_idx>=loops)
       break;
-    //resize(frame1,frame2,frame1.size()/2);
     double frameNO = cap.get(CAP_PROP_POS_FRAMES);
     
 
     // update the tracking result
     t1 = cv::getTickCount();
     timer=clock();
-    roi = staple.tracker_staple_update(frame2);
-    staple.tracker_staple_train(frame2, false);
+    roi = staple.tracker_staple_update(frame);
+    staple.tracker_staple_train(frame, false);
     t2 = cv::getTickCount();
     timer=clock()-timer;
     tick_counter += t2 - t1;
     fps=(double)CLOCKS_PER_SEC/(double)timer;
     frame_idx++;
 
-    rectangle( frame2, roi, Scalar( 255, 0, 0 ), 2, 1 );
+    rectangle( frame, roi, Scalar( 255, 0, 0 ), 2, 1 );
 
-    sprintf (buffer, "speed: %.0f fps frame index:%d", fps,int(frameNO));
+    sprintf (buffer, "speed: %.0f fps frame index:%d, frame height[%d] width[%d]", fps,int(frameNO),frame.size().height,frame.size().width);
     text = buffer;
-    putText(frame2, text, Point(20,20), FONT_HERSHEY_PLAIN, 1.25, Scalar(0,0,0),2);
-    sprintf (buffer, "roi length: %d ", int(roi.width));
+    putText(frame, text, Point(20,20), FONT_HERSHEY_PLAIN, 1.25, Scalar(0,0,0),2);
+    sprintf (buffer, "roi length: %d , roi.x[%4d],roi.y[%4d]", int(roi.width),int(roi.x),int(roi.y));
     text = buffer;
-    putText(frame2, text, Point(20,35), FONT_HERSHEY_PLAIN, 1.25, Scalar(0,0,0),2);    
+    putText(frame, text, Point(20,35), FONT_HERSHEY_PLAIN, 1.25, Scalar(0,0,0),2);    
     // show image with the tracked object
-    imshow("tracker",frame2);
+    imshow("tracker",frame);
 
   }
 
