@@ -335,6 +335,27 @@ void fhog( float *M, float *O, float *H, int h, int w, int binSize,
   hogChannels( H+nbo*3, R1, N, hb, wb, nOrients*2, clip, 2 );
   wrFree(N); wrFree(R1); wrFree(R2);
 }
+// fhog28 optimize
+void fhog28_( float *M, float *O, float *H, int h, int w, int binSize,
+  int nOrients, int softBin, float clip )
+{
+  const int hb=h/binSize, wb=w/binSize, nb=hb*wb, nbo=nb*nOrients;
+  float *N, *R1, *R2; int o, x;
+  // compute unnormalized constrast sensitive histograms
+  R1 = (float*) wrCalloc(wb*hb*nOrients*2,sizeof(float));
+  gradHist( M, O, R1, h, w, binSize, nOrients*2, softBin, true );
+  // compute unnormalized contrast insensitive histograms
+  R2 = (float*) wrCalloc(wb*hb*nOrients,sizeof(float));
+  for( o=0; o<nOrients; o++ ) for( x=0; x<nb; x++ )
+    R2[o*nb+x] = R1[o*nb+x]+R1[(o+nOrients)*nb+x];
+  // compute block normalization values
+  N = hogNormMatrix( R2, nOrients, hb, wb, binSize );
+  // normalized histograms and texture channels
+  hogChannels( H+nbo*0, R1, N, hb, wb, nOrients*2, clip, 1 );
+  hogChannels( H+nbo*2, R2, N, hb, wb, nOrients*1, clip, 1 );
+  // hogChannels( H+nbo*3, R1, N, hb, wb, nOrients*2, clip, 2 );
+  wrFree(N); wrFree(R1); wrFree(R2);
+}
 
 /******************************************************************************/
 #ifdef MATLAB_MEX_FILE
@@ -464,6 +485,22 @@ float* fhog(float *M,float* O,int height,int width,int channel,int *h,int *w,int
     return crop_H(H,h,w,*d,height%binSize < binSize/2,width%binSize < binSize/2);
 }
 
+// fhog28 optimize
+float* fhog28_(float *M,float* O,int height,int width,int channel,int *h,int *w,int *d,int binSize, int nOrients, float clip, bool crop) {
+    *h = height/binSize;
+    *w = width/binSize;
+    *d = nOrients*3;
+
+    float* H = new float[(*h)*(*w)*(*d)];
+    memset(H,0.0f,(*h)*(*w)*(*d)*sizeof(float));
+
+    fhog28_( M, O, H, height, width, binSize, nOrients, -1, clip );
+
+    if(!crop)
+        return H;
+    return crop_H(H,h,w,*d,height%binSize < binSize/2,width%binSize < binSize/2);
+}
+
 void fhog(cv::MatND &fhog_feature, const cv::Mat& input, int binSize, int nOrients, float clip, bool crop) {
     int HEIGHT = input.rows;
     int WIDTH = input.cols;
@@ -520,7 +557,7 @@ void fhog28(cv::MatND &fhog_feature, cv::MatND &fhog_feature2, const cv::Mat& in
     int HEIGHT = input.rows;
     int WIDTH = input.cols;
     int DEPTH = input.channels();
-
+    /*
     float *II = new float[WIDTH*HEIGHT*DEPTH];
     int count=0;
 
@@ -543,17 +580,39 @@ void fhog28(cv::MatND &fhog_feature, cv::MatND &fhog_feature2, const cv::Mat& in
       for (int i = 0; i < WIDTH; i++) 
         for (int j = 0; j < HEIGHT; j++)
           I[k*WIDTH*HEIGHT+i*HEIGHT+j] = II[i*HEIGHT*DEPTH+j*DEPTH+k];
-
+    */
+    float *I = new float[HEIGHT*WIDTH*DEPTH];
+    float * p_input = nullptr;
+    p_input = I + 2*HEIGHT*WIDTH;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[0];
+      }
+    p_input = I + 1*HEIGHT*WIDTH;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[1];
+      }
+    p_input = I;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[2];
+      }      
+    
     float *M = new float[HEIGHT*WIDTH], *O = new float[HEIGHT*WIDTH];
     gradMag(I, M, O, HEIGHT, WIDTH, DEPTH, true);
 
     int h,w,d;
-    float* HH = fhog(M,O,HEIGHT,WIDTH,DEPTH,&h,&w,&d,binSize,nOrients,clip,crop);
+    //float* HH = fhog(M,O,HEIGHT,WIDTH,DEPTH,&h,&w,&d,binSize,nOrients,clip,crop);
+    float* HH = fhog28_(M,O,HEIGHT,WIDTH,DEPTH,&h,&w,&d,binSize,nOrients,clip,crop);
 
     #undef CHANNELS
     #define CHANNELS 28
 
-    assert(d >= CHANNELS);
+    assert(d >= CHANNELS-1);
 
     // out = zeros(h, w, 28, 'single');
     // out(:,:,2:28) = temp(:,:,1:27);
@@ -579,7 +638,7 @@ void fhog28(cv::MatND &fhog_feature, cv::MatND &fhog_feature2, const cv::Mat& in
     float* H2 = (float *) fhog_feature2.data;
     for(int k = 0;k < CHANNELS-1;k++)
       for(int j = 0;j < h; j++)
-        for(int i = 0;i < w; i++) 
+        for(int i = 0;i < w; i++)
           H2[(k+1)*w*h+j*w+i] = HH[k*w*h+i*h+j]; // ->whd
   
     //fhog_feature = cv::MatND(h,w,CV_32FC(CHANNELS),H).clone();
@@ -587,14 +646,15 @@ void fhog28(cv::MatND &fhog_feature, cv::MatND &fhog_feature2, const cv::Mat& in
     //delete[] H;
 
     delete[] M; delete[] O;
-    delete[] II;delete[] I;delete[] HH;
+    //delete[] II;
+    delete[] I;delete[] HH;
 }
 
 void fhog31(cv::MatND &fhog_feature, const cv::Mat& input, cv::Mat& tmp1, cv::Mat& tmp2, int binSize, int nOrients, float clip, bool crop) {
     int HEIGHT = input.rows;
     int WIDTH = input.cols;
     int DEPTH = input.channels();
-
+    /*
     //float *II = new float[WIDTH*HEIGHT*DEPTH];
     tmp2.create(WIDTH,HEIGHT,CV_32FC(DEPTH));
     float *II = (float *) tmp2.data;
@@ -621,6 +681,28 @@ void fhog31(cv::MatND &fhog_feature, const cv::Mat& input, cv::Mat& tmp1, cv::Ma
       for (int i = 0; i < WIDTH; i++) 
         for (int j = 0; j < HEIGHT; j++) 
           I[k*WIDTH*HEIGHT+i*HEIGHT+j] = II[i*HEIGHT*DEPTH+j*DEPTH+k];
+    */
+    tmp1.create(WIDTH,HEIGHT,CV_32FC(DEPTH));
+    float *I = (float *) tmp1.data;
+    float * p_input = nullptr;
+    p_input = I + 2*HEIGHT*WIDTH;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[0];
+      }
+    p_input = I + 1*HEIGHT*WIDTH;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[1];
+      }
+    p_input = I;
+    for (int j = 0; j < WIDTH; j++)
+      for (int i = 0; i < HEIGHT; i++) {
+          cv::Vec3b p = input.at<cv::Vec3b>(i,j);
+          p_input[j*WIDTH+i] = p[2];
+      }    
 
     float *M = new float[HEIGHT*WIDTH], *O = new float[HEIGHT*WIDTH];
     gradMag(I, M, O, HEIGHT, WIDTH, DEPTH, true);
