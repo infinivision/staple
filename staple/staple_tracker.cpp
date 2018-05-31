@@ -19,7 +19,7 @@
 // I found this bug by running vot2015/tunnel, it happened when frameno+1==22 after frameno+1==21
 void STAPLE_TRACKER::mexResize(const cv::Mat &im, cv::Mat &output, cv::Size newsz, const char *method) {
     int interpolation = cv::INTER_LINEAR;
-
+    /*
     cv::Size sz = im.size();
 
     if(!strcmp(method, "antialias")){
@@ -36,7 +36,7 @@ void STAPLE_TRACKER::mexResize(const cv::Mat &im, cv::Mat &output, cv::Size news
         assert(0);
         return;
     }
-
+    */
   cv::resize(im, output, newsz, 0, 0, interpolation);
 }
 
