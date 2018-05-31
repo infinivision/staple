@@ -1028,8 +1028,9 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
 
         xtf2.copyTo(xtf2_old);
         xtfr2.copyTo(xtfr2_old);
-
-        updateHistModel(false, im_patch_bg, cfg.learning_rate_pwp);
+        
+        if(frameno%10==0)
+            updateHistModel(false, im_patch_bg, cfg.learning_rate_pwp);
     }
 
 
@@ -1304,13 +1305,13 @@ cv::Rect STAPLE_TRACKER::tracker_staple_update(const cv::Mat &im)
     getSubwindow(im, pos, norm_bg_area, bg_area, im_patch_cf);
 
     cv::Size pwp_search_area;
-
+    /*
     pwp_search_area.width = round(norm_pwp_search_area.width / area_resize_factor);
     pwp_search_area.height = round(norm_pwp_search_area.height / area_resize_factor);
 
     // extract patch of size pwp_search_area and resize to norm_pwp_search_area
     getSubwindow(im, pos, norm_pwp_search_area, pwp_search_area, im_patch_pwp);
-
+    */
     // compute feature map
     //cv::MatND xt_windowed;
     cv::MatND xt_windowed=xt;
@@ -1479,7 +1480,8 @@ cv::Rect STAPLE_TRACKER::tracker_staple_update(const cv::Mat &im)
     }
 
     //cv::Mat likelihood_map;
-    getColourMap(im_patch_pwp, likelihood_map);
+    //  getColourMap(im_patch_pwp, likelihood_map);
+    getColourMap(im_patch_cf, likelihood_map);
     //[likelihood_map] = getColourMap(im_patch_pwp, bg_hist, fg_hist, p.n_bins, p.grayscale_sequence);
 
     // each pixel of response_pwp loosely represents the likelihood that
