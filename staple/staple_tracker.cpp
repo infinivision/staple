@@ -15,6 +15,16 @@
 #include "staple_tracker.hpp"
 #include <iomanip>
 
+STAPLE_TRACKER::STAPLE_TRACKER(){ 
+    cfg = default_parameters_staple(cfg); 
+    frameno = 0; 
+    fftwInit(cfg.fftw_window_len,cfg.fftw_window_len,28);
+};
+
+STAPLE_TRACKER::~STAPLE_TRACKER(){
+    fftwRelease();
+};
+
 string STAPLE_TRACKER::importWisdom(){
     string file;
     char * wisdomPath = getenv("wisdom");
@@ -116,6 +126,8 @@ void STAPLE_TRACKER::initializeAllAreas(const cv::Mat &im)
     area_resize_factor = sqrt(cfg.fixed_area / double(bg_area.width * bg_area.height));
     norm_bg_area.width = round(bg_area.width * area_resize_factor);
     norm_bg_area.height = round(bg_area.height * area_resize_factor);
+    //norm_bg_area.width  = cfg.fftw_window_len * cfg.hog_cell_size;
+    //norm_bg_area.height = cfg.fftw_window_len * cfg.hog_cell_size;
 
     std::cout << "area_resize_factor " << area_resize_factor << " norm_bg_area.width " << norm_bg_area.width << " norm_bg_area.height " << norm_bg_area.height << std::endl;
 
@@ -431,7 +443,7 @@ void * fftwf_mallocWrapper(size_t n) {
 void inline STAPLE_TRACKER::fftwInit(int row, int col, int cn) {
 
     // add for eigen fftw
-    cout << "row col: "<<row << " "<< col << endl;
+    cout << "fft compute windows row col: "<<row << "*"<< col << endl;
     y_fftw  = cv::Mat(row,col,CV_32FC1,fftwf_mallocWrapper(sizeof (float) * row * col ));
     yf_fftw = cv::Mat(row,col/2+1,CV_32FC2,fftwf_mallocWrapper(sizeof (fftwf_complex) * row * (col/2+1) ));
 
@@ -475,6 +487,23 @@ void inline STAPLE_TRACKER::fftwInit(int row, int col, int cn) {
       cout << "fftwf create ifft plan failed!" << endl;
       exit(1);
     }
+}
+
+void inline STAPLE_TRACKER::fftwRelease() {
+
+    // add for eigen fftw
+    fftwf_destroy_plan(fftPlan);
+    fftwf_destroy_plan(ifftPlan);
+    
+    fftwf_free(y_fftw.data);
+    fftwf_free(yf_fftw.data);
+
+    fftwf_free(xt2.data);
+    fftwf_free(xtf2.data);
+    fftwf_free(xtf2_windows.data);
+
+    fftwf_free(response_cff_fftw.data);
+    fftwf_free(response_cf_fftw.data);
 }
 
 /*
@@ -579,11 +608,11 @@ void STAPLE_TRACKER::tracker_staple_initialize(const cv::Mat &im, cv::Rect_<floa
     gaussianResponse(cf_response_size, output_sigma, y);
 
     // add eigen fftw
-    fftwInit(cf_response_size.height,cf_response_size.width,28);
+    // fftwInit(cf_response_size.height,cf_response_size.width,28);
     vector<cv::Mat> yv;
     yv.resize(2);
     cv::split(y,yv);
-    y_fftw = yv[0].clone();
+    yv[0].copyTo(y_fftw);
     fftTool(y_fftw,yf_fftw);
 
     //cv::dft(y, yf);
@@ -1037,7 +1066,7 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
 
     if(first){
         xtf2_old  =  xtf2.clone();
-        xtfr2_old =  xtfr2.clone();  
+        xtfr2_old =  xtfr2.clone();
     } else {
         Map<ArrayXcf> a1_old((std::complex<float> *) xtf2_old.data, clen);
         Map<ArrayXf>  a2_old((float*) xtfr2_old.data, clen);

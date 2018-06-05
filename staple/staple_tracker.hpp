@@ -26,6 +26,7 @@ struct staple_cfg
     bool grayscale_sequence = false;    // suppose that sequence is colour
     int hog_cell_size = 4;
     int fixed_area = 128*128;           // standard area to which we resize the target
+    int fftw_window_len = 32;           // window len = sqr(fixed_area)/ hog_cell_size: 32 = 128/4;
     int n_bins = 2*2*2*2*2;             // number of bins for the color histograms (bg and fg models)
     double learning_rate_pwp = 0.04;    // bg and fg color models learning rate
     const char * feature_type = "fhog"; // "fhog", ""gray""
@@ -59,8 +60,8 @@ struct staple_cfg
 class STAPLE_TRACKER
 {
 public:
-    STAPLE_TRACKER(){ cfg = default_parameters_staple(cfg); frameno = 0; };
-    ~STAPLE_TRACKER(){}
+    STAPLE_TRACKER();
+    ~STAPLE_TRACKER();
 
     void mexResize(const cv::Mat &im, cv::Mat &output, cv::Size newsz, const char *method);
     void tracker_staple_train(const cv::Mat &im, bool first);
@@ -79,6 +80,7 @@ protected:
     void initializeAllAreas(const cv::Mat &im);
 
     void inline fftwInit(int row, int col, int cn);
+    void inline fftwRelease();
     void inline fftTool(const vector<cv::Mat> & src, vector<cv::Mat> & dest);
     void inline fftTool(const cv::Mat & src, cv::Mat & dest);
     void inline ifftTool(const cv::Mat & src, cv::Mat & dest);
