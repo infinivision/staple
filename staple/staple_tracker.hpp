@@ -67,6 +67,13 @@ public:
     void tracker_staple_initialize(const cv::Mat &im, cv::Rect_<float> region);
     cv::Rect tracker_staple_update(const cv::Mat &im);
 
+    //  CAVEAT
+    //  wisdom operation method do not guarantee multi-thread safety!
+    static string importWisdom();
+    static bool   importWisdom(std::string& file);
+    static void   clearWisdom();
+    static string wisdomFile;
+
 protected:
     staple_cfg default_parameters_staple(staple_cfg cfg);
     void initializeAllAreas(const cv::Mat &im);

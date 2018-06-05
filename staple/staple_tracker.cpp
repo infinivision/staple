@@ -15,6 +15,43 @@
 #include "staple_tracker.hpp"
 #include <iomanip>
 
+string STAPLE_TRACKER::importWisdom(){
+    string file;
+    char * wisdomPath = getenv("wisdom");
+    if (wisdomPath == nullptr) {
+      cout << "env wisdom is null, import from current work dir" 
+           << endl;
+      file = string("wisdom");
+    } else {
+      file = string(wisdomPath) + string("/wisdom");
+    }
+    if(0==fftwf_import_wisdom_from_filename(file.c_str())){
+      cout << "fftw wisdom file import failed!" <<endl;
+      exit(0);
+    } else {
+      cout << "wisdom import success" << endl;
+    }
+    return file;
+}
+  
+bool STAPLE_TRACKER::importWisdom(std::string &file){
+    if(0==fftwf_import_wisdom_from_filename(file.c_str())){
+      cout << "fftw wisdom file import failed!" <<endl;
+      return false;
+    } else {
+      cout << "wisdom import success" << endl;
+      wisdomFile = file;
+      return true;
+    }
+}
+
+string STAPLE_TRACKER::wisdomFile = STAPLE_TRACKER::importWisdom();
+
+void STAPLE_TRACKER::clearWisdom(){
+    fftwf_forget_wisdom();
+}
+
+
 // mexResize got different results using different OpenCV, it's not trustable
 // I found this bug by running vot2015/tunnel, it happened when frameno+1==22 after frameno+1==21
 void STAPLE_TRACKER::mexResize(const cv::Mat &im, cv::Mat &output, cv::Size newsz, const char *method) {
@@ -392,22 +429,6 @@ void * fftwf_mallocWrapper(size_t n) {
 }
 
 void inline STAPLE_TRACKER::fftwInit(int row, int col, int cn) {
-
-    string file;
-    char * wisdomPath = getenv("wisdom");
-    if (wisdomPath == nullptr) {
-      cout << "env wisdom is null, import from current work dir" 
-           << endl;
-      file = string("wisdom");
-    } else {
-      file = string(wisdomPath) + string("/wisdom");
-    }
-    if(0==fftwf_import_wisdom_from_filename(file.c_str())){
-      cout << "fftw wisdom file import failed!" <<endl;
-      exit(0);
-    } else {
-      cout << "wisdom import success" << endl;
-    }
 
     // add for eigen fftw
     cout << "row col: "<<row << " "<< col << endl;
