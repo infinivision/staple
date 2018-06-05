@@ -34,3 +34,6 @@ target_link_libraries(${PROJECT_NAME} trackerStaple ${OpenCV_LIBS} fftw3f)
 
 add_executable(bench bench.cpp)
 target_link_libraries(bench trackerStaple ${OpenCV_LIBS} fftw3f)
+
+add_executable(export export.cpp)
+target_link_libraries(export fftw3f)

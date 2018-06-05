@@ -438,9 +438,8 @@ void inline STAPLE_TRACKER::fftwInit(int row, int col, int cn) {
       xtfv_windows[i]   = cv::Mat(row,(col/2+1),CV_32FC2,(void *)(p4+i*row*(col/2+1)));
     }
 
-    fftPlan  = fftwf_plan_dft_r2c_2d(row, col, (float *) xtv[0].data, (fftwf_complex *) xtfv[0].data,
-//                                        FFTW_PATIENT);
-                                        FFTW_WISDOM_ONLY|FFTW_PATIENT);
+    fftPlan  = fftwf_plan_dft_r2c_2d(row, col, (float *) xtv[0].data, 
+                    (fftwf_complex *) xtfv[0].data, FFTW_WISDOM_ONLY|FFTW_PATIENT);
     if(fftPlan == nullptr ){
       cout << "fftwf create fft plan failed!" << endl;
       exit(1);
@@ -448,9 +447,8 @@ void inline STAPLE_TRACKER::fftwInit(int row, int col, int cn) {
 
     response_cff_fftw   = cv::Mat(row,col/2+1,CV_32FC2,fftwf_mallocWrapper(sizeof (fftwf_complex) * row * (col/2+1) ));
     response_cf_fftw    = cv::Mat(row,col,CV_32FC1,fftwf_mallocWrapper(sizeof (float) * row * col ));
-    ifftPlan    = fftwf_plan_dft_c2r_2d(row, col, (fftwf_complex *) response_cff_fftw.data, (float *) response_cf_fftw.data, 
-//                                         FFTW_PATIENT);
-                                         FFTW_WISDOM_ONLY|FFTW_PATIENT);
+    ifftPlan    = fftwf_plan_dft_c2r_2d(row, col, (fftwf_complex *) response_cff_fftw.data, 
+                    (float *) response_cf_fftw.data, FFTW_WISDOM_ONLY|FFTW_PATIENT);
 
     if(ifftPlan == nullptr){
       cout << "fftwf create ifft plan failed!" << endl;
