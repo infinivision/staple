@@ -25,7 +25,7 @@ struct staple_cfg
 {
     bool grayscale_sequence = false;    // suppose that sequence is colour
     int hog_cell_size = 4;
-    int fixed_area = 120*120;           // standard area to which we resize the target
+    int fixed_area = 128*128;           // standard area to which we resize the target
     int n_bins = 2*2*2*2*2;             // number of bins for the color histograms (bg and fg models)
     double learning_rate_pwp = 0.04;    // bg and fg color models learning rate
     const char * feature_type = "fhog"; // "fhog", ""gray""

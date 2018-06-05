@@ -815,24 +815,23 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
         scale_resize_rate = 2;
     else if (target_sz.width>=120)
         scale_resize_rate = 3;
-    {
-        cv::Size_<float> max_patch_sz;
-        max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
-        max_patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(0));
 
-        patch_centerCoor.x = max_patch_sz.width/2;
-        patch_centerCoor.y = max_patch_sz.height/2;
+    cv::Size_<float> max_patch_sz;
+    max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
+    max_patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(0));
 
-        cv::Size_<float> new_sz;
-        float w1 = max_patch_sz.width;
-        float h1 = max_patch_sz.height;
+    patch_centerCoor.x = max_patch_sz.width/2;
+    patch_centerCoor.y = max_patch_sz.height/2;
 
-        w1 /= scale_resize_rate;
-        h1 /= scale_resize_rate;
-        new_sz.width  = round(w1);
-        new_sz.height = round(h1);
-        getSubwindowFloor(im, centerCoor, new_sz, max_patch_sz, im_max_patch);
-    }
+    cv::Size_<float> new_sz;
+    float w1 = max_patch_sz.width;
+    float h1 = max_patch_sz.height;
+
+    w1 /= scale_resize_rate;
+    h1 /= scale_resize_rate;
+    new_sz.width  = round(w1);
+    new_sz.height = round(h1);
+    getSubwindowFloor(im, centerCoor, new_sz, max_patch_sz, im_max_patch);
 
     float *OUTPUT = NULL;
     int w = 0;
