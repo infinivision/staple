@@ -581,8 +581,10 @@ void STAPLE_TRACKER::tracker_staple_initialize(const cv::Mat &im, cv::Rect_<floa
     cfg.init_pos.x = region.x + region.width / 2.0;
     cfg.init_pos.y = region.y + region.height / 2.0;
 
-    cfg.target_sz.width = round(w);
-    cfg.target_sz.height = round(h);
+    // cfg.target_sz.width = round(w);
+    // cfg.target_sz.height = round(h);
+    cfg.target_sz.width  = max(region.width,region.height);
+    cfg.target_sz.height = cfg.target_sz.width;
 
     initializeAllAreas(im);
 

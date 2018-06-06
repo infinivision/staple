@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
   //quit if ROI was not selected
   if(roi.width==0 || roi.height==0)
     return 0;
-
+  /*
   if(roi.width > roi.height){
     roi.y -= (roi.width - roi.height)/2;
     roi.height = roi.width;
@@ -63,7 +63,7 @@ int main(int argc, char * argv[])
     roi.x -= ( roi.height - roi.width )/2;
     roi.width = roi.height;
   }
-
+  */
   STAPLE_TRACKER staple;
   // initialize the tracker
   int64 t1 = cv::getTickCount();
