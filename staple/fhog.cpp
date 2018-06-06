@@ -34,8 +34,11 @@ void alFree(void* aligned) {
 void grad1( float *I, float *Gx, float *Gy, int h, int w, int x ) {
   int y, y1; float *Ip, *In, r; __m128 *_Ip, *_In, *_G, _r;
   // compute column of Gx
-  Ip=I-h; In=I+h; r=.5f;
-  if(x==0) { r=1; Ip+=h; } else if(x==w-1) { r=1; In-=h; }
+  // Ip=I-h; In=I+h; r=.5f;
+  // if(x==0) { r=1; Ip+=h; } else if(x==w-1) { r=1; In-=h; }
+  if(x==0) { r=1; Ip=I; In=I+h;} 
+  else if(x==w-1) { r=1; In=I; Ip=I-h;}
+  else {Ip=I-h; In=I+h; r=.5f;}  
   if( h<4 || h%4>0 || (size_t(I)&15) || (size_t(Gx)&15) ) {
     for( y=0; y<h; y++ ) *Gx++=(*In++-*Ip++)*r;
   } else {
