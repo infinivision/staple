@@ -22,5 +22,5 @@ some code from:
 # Bench Mark
 |       Enviroment       | FPS
 | :--------------------: | :--:
-| 2.8 GHz Intel Core i5 | 450 
-| Quad-core Cortex-A53 | 75
+| 2.8 GHz Intel Core i5 | 500 
+| Quad-core Cortex-A53 | 105
