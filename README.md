@@ -1,7 +1,7 @@
 # staple
 c++ implementation of tracking algorithm staple: described in the CVPR16 paper "Staple: Complementary Learners for Real-Time Tracking" by Bertinetto et al.
 
-original prjoect:
+original project:
   https://github.com/xuduo35/STAPLE
 
 some code from:
@@ -21,7 +21,10 @@ some code from:
 
 # Bench Mark
 
-        Enviroment      | FPS 
------------------------ | ----------
-2.8 GHz Intel Core i5   | 450 
- Quad-core Cortex-A53   | 75
+        Enviroment       | FPS 
+ ----------------------- | ----
+ 
+ 2.8 GHz Intel Core i5   | 450 
+  Quad-core Cortex-A53   | 75
+
+
