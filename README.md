@@ -20,11 +20,7 @@ some code from:
 3. Runtime segment fault because of compiler optimization for branch predict.
 
 # Bench Mark
-
-        Enviroment       | FPS 
- ----------------------- | ----
- 
- 2.8 GHz Intel Core i5   | 450 
-  Quad-core Cortex-A53   | 75
-
-
+|       Enviroment       | FPS
+| :--------------------: | :--:
+| 2.8 GHz Intel Core i5 | 450 
+| Quad-core Cortex-A53 | 75
