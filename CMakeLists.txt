@@ -37,3 +37,6 @@ target_link_libraries(bench trackerStaple ${OpenCV_LIBS} fftw3f)
 
 add_executable(export export.cpp)
 target_link_libraries(export fftw3f)
+
+add_executable(rStapleCC resize_main.cpp)
+target_link_libraries(rStapleCC trackerStaple ${OpenCV_LIBS} fftw3f)
