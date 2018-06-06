@@ -21,6 +21,12 @@ STAPLE_TRACKER::STAPLE_TRACKER(){
     fftwInit(cfg.fftw_window_len,cfg.fftw_window_len,28);
 };
 
+STAPLE_TRACKER::STAPLE_TRACKER(staple_cfg & cfg_){ 
+    cfg = cfg_; 
+    frameno = 0; 
+    fftwInit(cfg.fftw_window_len,cfg.fftw_window_len,28);
+};
+
 STAPLE_TRACKER::~STAPLE_TRACKER(){
     fftwRelease();
 };
@@ -1651,4 +1657,50 @@ cv::Rect STAPLE_TRACKER::tracker_staple_update(const cv::Mat &im)
     }
 
     return location;
+}
+
+void staple_cfg::read( const cv::FileNode& fn ){
+    staple_cfg cfg;
+    *this = cfg;
+    if (!fn["fixed_area"].empty())
+        fn["fixed_area"] >> fixed_area;
+    if (!fn["fftw_window_len"].empty())
+        fn["fftw_window_len"] >> fftw_window_len;
+    if (!fn["inner_padding"].empty())
+        fn["inner_padding"] >> inner_padding;
+    if (!fn["lambda"].empty())
+        fn["lambda"] >> lambda;
+    if (!fn["bg_padding_rate"].empty())
+        fn["bg_padding_rate"] >> bg_padding_rate;
+    if (!fn["histModelUpdateInterval"].empty())
+        fn["histModelUpdateInterval"] >> histModelUpdateInterval;
+    if (!fn["scale_resize_rate1"].empty())
+        fn["scale_resize_rate1"] >> scale_resize_rate1;
+    if (!fn["scale_resize_rate2"].empty())
+        fn["scale_resize_rate2"] >> scale_resize_rate2;
+    if (!fn["scale_resize_rate3"].empty())
+        fn["scale_resize_rate3"] >> scale_resize_rate3;
+    if (!fn["num_scales"].empty())
+        fn["num_scales"] >> num_scales;
+    if (!fn["scale_step"].empty())
+        fn["scale_step"] >> scale_step;
+    if (!fn["scale_model_max_area"].empty())
+        fn["scale_model_max_area"] >> scale_model_max_area;
+}
+
+void staple_cfg::write(cv::FileStorage& fs ){
+
+    fs << "fixed_area" << fixed_area;
+    fs << "fftw_window_len" << fftw_window_len;
+    fs << "inner_padding" << inner_padding;
+    fs << "lambda" << lambda;
+    fs << "bg_padding_rate" << bg_padding_rate;
+    fs << "histModelUpdateInterval" << histModelUpdateInterval;
+    fs << "scale_resize_rate1" << scale_resize_rate1;
+    fs << "scale_resize_rate2" << scale_resize_rate2;
+    fs << "scale_resize_rate3" << scale_resize_rate3;
+    fs << "num_scales" << num_scales;
+    fs << "scale_step" << scale_step;
+    fs << "scale_model_max_area" << scale_model_max_area;
+
 }

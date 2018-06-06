@@ -32,7 +32,7 @@ struct staple_cfg
     const char * feature_type = "fhog"; // "fhog", ""gray""
     double inner_padding = 0.2;         // defines inner area used to sample colors from the foreground
     double output_sigma_factor = 1/16.0; // standard deviation for the desired translation filter output
-    double lambda = 1e-3;               // egularization weight
+    double lambda = 1e-3;               // regularization weight
     double learning_rate_cf = 0.01;     // HOG model learning rate
     double merge_factor = 0.3;          // fixed interpolation factor - how to linearly combine the two responses
     const char * merge_method = "const_factor";
@@ -58,12 +58,17 @@ struct staple_cfg
 
     cv::Point_<float> init_pos;
     cv::Size target_sz;
+
+    void read( const cv::FileNode& fn );
+    void write( cv::FileStorage& fs );
+
 };
 
 class STAPLE_TRACKER
 {
 public:
     STAPLE_TRACKER();
+    STAPLE_TRACKER(staple_cfg & cfg_);
     ~STAPLE_TRACKER();
 
     void mexResize(const cv::Mat &im, cv::Mat &output, cv::Size newsz, const char *method);

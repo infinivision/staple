@@ -64,7 +64,10 @@ int main(int argc, char * argv[])
   roi.height = h;
   roi.width = w;
 
-  STAPLE_TRACKER staple;
+  FileStorage fs("staple.yaml",FileStorage::READ);
+  staple_cfg cfg;
+  cfg.read(fs.root());
+  STAPLE_TRACKER staple(cfg);
   // initialize the tracker
   int64 t1 = cv::getTickCount();
   staple.tracker_staple_initialize(frame, roi);

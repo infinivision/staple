@@ -56,15 +56,15 @@ int main(int argc, char * argv[])
   if(roi.width==0 || roi.height==0)
     return 0;
   /*
-  if(roi.width > roi.height){
-    roi.y -= (roi.width - roi.height)/2;
-    roi.height = roi.width;
-  } else {
-    roi.x -= ( roi.height - roi.width )/2;
-    roi.width = roi.height;
-  }
+  FileStorage fs("staple.yaml",FileStorage::WRITE);
+  staple_cfg cfg;
+  cfg.write(fs);
+  fs.release();
   */
-  STAPLE_TRACKER staple;
+  FileStorage fs("staple.yaml",FileStorage::READ);
+  staple_cfg cfg;
+  cfg.read(fs.root());
+  STAPLE_TRACKER staple(cfg);
   // initialize the tracker
   int64 t1 = cv::getTickCount();
 

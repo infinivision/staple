@@ -1,0 +1,14 @@
+%YAML:1.0
+---
+fixed_area: 12544
+fftw_window_len: 28
+inner_padding: 0.2
+lambda: 0.001
+bg_padding_rate: 0.5
+histModelUpdateInterval: 10
+scale_resize_rate1: 3.
+scale_resize_rate2: 2.
+scale_resize_rate3: 1.5
+num_scales: 25
+scale_step: 1.02
+scale_model_max_area: 200
