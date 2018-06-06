@@ -25,8 +25,8 @@ struct staple_cfg
 {
     bool grayscale_sequence = false;    // suppose that sequence is colour
     int hog_cell_size = 4;
-    int fixed_area = 128*128;           // standard area to which we resize the target
-    int fftw_window_len = 32;           // window len = sqr(fixed_area)/ hog_cell_size: 32 = 128/4;
+    int fixed_area = 112*112;           // standard area to which we resize the target
+    int fftw_window_len = 28;           // window len = sqr(fixed_area)/ hog_cell_size: 32 = 128/4;
     int n_bins = 2*2*2*2*2;             // number of bins for the color histograms (bg and fg models)
     double learning_rate_pwp = 0.04;    // bg and fg color models learning rate
     const char * feature_type = "fhog"; // "fhog", ""gray""
@@ -38,7 +38,10 @@ struct staple_cfg
     const char * merge_method = "const_factor";
     bool den_per_channel = false;
     float bg_padding_rate = 0.5;
-
+    int histModelUpdateInterval = 10;
+    float scale_resize_rate1 = 3;
+    float scale_resize_rate2 = 2;
+    float scale_resize_rate3 = 1.5;
     // scale related
     bool scale_adaptation = true;
     int hog_scale_cell_size = 4;         // Default DSST=4

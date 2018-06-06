@@ -860,11 +860,11 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
     else if (target_sz.width>=45 && target_sz.width<60)
         scale_resize_rate = 1.25;
     else if (target_sz.width>=60 && target_sz.width<80)
-        scale_resize_rate = 1.5;
+        scale_resize_rate = cfg.scale_resize_rate3;
     else if (target_sz.width>=80 && target_sz.width<120)
-        scale_resize_rate = 2;
+        scale_resize_rate = cfg.scale_resize_rate2;
     else if (target_sz.width>=120)
-        scale_resize_rate = 3;
+        scale_resize_rate = cfg.scale_resize_rate1;
 
     cv::Size_<float> max_patch_sz;
     max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
@@ -1078,7 +1078,7 @@ void STAPLE_TRACKER::tracker_staple_train(const cv::Mat &im, bool first)
         xtf2.copyTo(xtf2_old);
         xtfr2.copyTo(xtfr2_old);
         
-        if(frameno%10==0)
+        if(frameno % cfg.histModelUpdateInterval == 0)
             updateHistModel(false, im_patch_bg, cfg.learning_rate_pwp);
     }
 
