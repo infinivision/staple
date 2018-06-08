@@ -39,10 +39,7 @@ struct staple_cfg
     bool den_per_channel = false;
     float bg_padding_rate = 0.5;
     int histModelUpdateInterval = 10;
-    float scale_resize_rate1 = 3;
-    float scale_resize_rate2 = 2;
-    float scale_resize_rate3 = 1.5;
-    float scale_resize_rate4 = 1.25;
+
     // scale related
     bool scale_adaptation = true;
     int hog_scale_cell_size = 4;         // Default DSST=4
@@ -52,6 +49,11 @@ struct staple_cfg
     double scale_model_factor = 1.0;
     double scale_step = 1.02;
     double scale_model_max_area = 16*16;
+    bool  enable_scale_resize = false;
+    float scale_resize_rate1 = 3;
+    float scale_resize_rate2 = 2;
+    float scale_resize_rate3 = 1.5;
+    float scale_resize_rate4 = 1.25;
 
     // debugging stuff
     int visualization = 0;              // show output bbox on frame

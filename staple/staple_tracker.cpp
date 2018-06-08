@@ -861,34 +861,39 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
     cv::Mat im_max_patch;
     cv::Point_<float> patch_centerCoor;
     float scale_resize_rate;
-    if(target_sz.width<45)
-        scale_resize_rate = 1.0;
-    else if (target_sz.width>=45 && target_sz.width<60)
-        scale_resize_rate = cfg.scale_resize_rate4;
-    else if (target_sz.width>=60 && target_sz.width<80)
-        scale_resize_rate = cfg.scale_resize_rate3;
-    else if (target_sz.width>=80 && target_sz.width<120)
-        scale_resize_rate = cfg.scale_resize_rate2;
-    else if (target_sz.width>=120)
-        scale_resize_rate = cfg.scale_resize_rate1;
-
     cv::Size_<float> max_patch_sz;
-    max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
-    max_patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(0));
+    if(cfg.enable_scale_resize){
+        if(target_sz.width<45)
+            scale_resize_rate = 1.0;
+        else if (target_sz.width>=45 && target_sz.width<60)
+            scale_resize_rate = cfg.scale_resize_rate4;
+        else if (target_sz.width>=60 && target_sz.width<80)
+            scale_resize_rate = cfg.scale_resize_rate3;
+        else if (target_sz.width>=80 && target_sz.width<120)
+            scale_resize_rate = cfg.scale_resize_rate2;
+        else if (target_sz.width>=120)
+            scale_resize_rate = cfg.scale_resize_rate1;
 
-    patch_centerCoor.x = max_patch_sz.width/2;
-    patch_centerCoor.y = max_patch_sz.height/2;
+        max_patch_sz.width  = floor(base_target_sz.width  * scale_factor * scale_factors.at<float>(0));
+        max_patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(0));
 
-    cv::Size_<float> new_sz;
-    float w1 = max_patch_sz.width;
-    float h1 = max_patch_sz.height;
+        patch_centerCoor.x = max_patch_sz.width/2;
+        patch_centerCoor.y = max_patch_sz.height/2;
 
-    w1 /= scale_resize_rate;
-    h1 /= scale_resize_rate;
-    new_sz.width  = round(w1);
-    new_sz.height = round(h1);
-    getSubwindowFloor(im, centerCoor, new_sz, max_patch_sz, im_max_patch);
+        cv::Size_<float> new_sz;
+        float w1 = max_patch_sz.width;
+        float h1 = max_patch_sz.height;
 
+        w1 /= scale_resize_rate;
+        h1 /= scale_resize_rate;
+        new_sz.width  = round(w1);
+        new_sz.height = round(h1);
+        getSubwindowFloor(im, centerCoor, new_sz, max_patch_sz, im_max_patch);
+    }  else {
+        im_max_patch = im;
+        patch_centerCoor = centerCoor;
+    }
+    
     float *OUTPUT = NULL;
     int w = 0;
     int h = 0;
@@ -905,11 +910,13 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
 
     for (int s = 0; s < cfg.num_scales; s++) {
 
-        //patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s));
-        //patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s));
-        patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
-        patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
-                
+        if(cfg.enable_scale_resize){
+            patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
+            patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s) / scale_resize_rate);
+        } else {
+            patch_sz.width = floor(base_target_sz.width * scale_factor * scale_factors.at<float>(s));
+            patch_sz.height = floor(base_target_sz.height * scale_factor * scale_factors.at<float>(s));
+        }
         if(patch_sz != last_sz){
             getSubwindowFloor(im_max_patch, patch_centerCoor, scale_model_sz, patch_sz, im_patch_resized);
             // extract scale features
@@ -1674,8 +1681,10 @@ void staple_cfg::read( const cv::FileNode& fn ){
         fn["bg_padding_rate"] >> bg_padding_rate;
     if (!fn["histModelUpdateInterval"].empty())
         fn["histModelUpdateInterval"] >> histModelUpdateInterval;
+    if (!fn["enable_scale_resize"].empty())
+        fn["enable_scale_resize"] >> enable_scale_resize;        
     if (!fn["scale_resize_rate1"].empty())
-        fn["scale_resize_rate1"] >> scale_resize_rate1;
+        fn["scale_resize_rate1"] >> scale_resize_rate1;        
     if (!fn["scale_resize_rate2"].empty())
         fn["scale_resize_rate2"] >> scale_resize_rate2;
     if (!fn["scale_resize_rate3"].empty())
@@ -1698,6 +1707,7 @@ void staple_cfg::write(cv::FileStorage& fs ){
     fs << "lambda" << lambda;
     fs << "bg_padding_rate" << bg_padding_rate;
     fs << "histModelUpdateInterval" << histModelUpdateInterval;
+    fs << "enable_scale_resize" << enable_scale_resize;    
     fs << "scale_resize_rate1" << scale_resize_rate1;
     fs << "scale_resize_rate2" << scale_resize_rate2;
     fs << "scale_resize_rate3" << scale_resize_rate3;
@@ -1705,5 +1715,6 @@ void staple_cfg::write(cv::FileStorage& fs ){
     fs << "num_scales" << num_scales;
     fs << "scale_step" << scale_step;
     fs << "scale_model_max_area" << scale_model_max_area;
+
 
 }
