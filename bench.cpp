@@ -64,7 +64,13 @@ int main(int argc, char * argv[])
   roi.height = h;
   roi.width = w;
 
-  FileStorage fs("staple.yaml",FileStorage::READ);
+  char * cfgPath = getenv("staple_cfg");
+  if (cfgPath == nullptr) {
+    cout << "env staple_cfg is null, read default cfg file staple.yaml" 
+          << endl;
+    cfgPath = (char *)"staple.yaml";
+  }
+  FileStorage fs(cfgPath, FileStorage::READ);
   staple_cfg cfg;
   cfg.read(fs.root());
   STAPLE_TRACKER staple(cfg);

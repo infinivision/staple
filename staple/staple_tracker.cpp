@@ -864,7 +864,7 @@ void STAPLE_TRACKER::getScaleSubwindow(const cv::Mat &im, cv::Point_<float> cent
     if(target_sz.width<45)
         scale_resize_rate = 1.0;
     else if (target_sz.width>=45 && target_sz.width<60)
-        scale_resize_rate = 1.25;
+        scale_resize_rate = cfg.scale_resize_rate4;
     else if (target_sz.width>=60 && target_sz.width<80)
         scale_resize_rate = cfg.scale_resize_rate3;
     else if (target_sz.width>=80 && target_sz.width<120)
@@ -1680,6 +1680,8 @@ void staple_cfg::read( const cv::FileNode& fn ){
         fn["scale_resize_rate2"] >> scale_resize_rate2;
     if (!fn["scale_resize_rate3"].empty())
         fn["scale_resize_rate3"] >> scale_resize_rate3;
+    if (!fn["scale_resize_rate4"].empty())
+        fn["scale_resize_rate4"] >> scale_resize_rate4;        
     if (!fn["num_scales"].empty())
         fn["num_scales"] >> num_scales;
     if (!fn["scale_step"].empty())
@@ -1699,6 +1701,7 @@ void staple_cfg::write(cv::FileStorage& fs ){
     fs << "scale_resize_rate1" << scale_resize_rate1;
     fs << "scale_resize_rate2" << scale_resize_rate2;
     fs << "scale_resize_rate3" << scale_resize_rate3;
+    fs << "scale_resize_rate3" << scale_resize_rate4;    
     fs << "num_scales" << num_scales;
     fs << "scale_step" << scale_step;
     fs << "scale_model_max_area" << scale_model_max_area;

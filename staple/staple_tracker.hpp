@@ -42,6 +42,7 @@ struct staple_cfg
     float scale_resize_rate1 = 3;
     float scale_resize_rate2 = 2;
     float scale_resize_rate3 = 1.5;
+    float scale_resize_rate4 = 1.25;
     // scale related
     bool scale_adaptation = true;
     int hog_scale_cell_size = 4;         // Default DSST=4
