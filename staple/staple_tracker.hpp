@@ -85,6 +85,7 @@ public:
     static bool   importWisdom(std::string& file);
     static void   clearWisdom();
     static string wisdomFile;
+    long id;
 
 protected:
     staple_cfg default_parameters_staple(staple_cfg cfg);
