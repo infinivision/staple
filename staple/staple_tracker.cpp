@@ -116,6 +116,11 @@ void STAPLE_TRACKER::initializeAllAreas(const cv::Mat &im)
     bg_area.width = std::min(bg_area.width, imsize.width - 1);
     bg_area.height = std::min(bg_area.height, imsize.height - 1);
 
+    if(bg_area.width>bg_area.height) 
+        bg_area.width = bg_area.height;
+    else
+        bg_area.height = bg_area.width;
+
     // make sure the differences are a multiple of 2 (makes things easier later in color histograms)
     bg_area.width = bg_area.width - (bg_area.width - cfg.target_sz.width) % 2;
     bg_area.height = bg_area.height - (bg_area.height - cfg.target_sz.height) % 2;

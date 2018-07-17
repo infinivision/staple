@@ -590,19 +590,19 @@ void fhog28(cv::MatND &fhog_feature, cv::MatND &fhog_feature2, const cv::Mat& in
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[0];
+          p_input[j*HEIGHT+i] = p[0];
       }
     p_input = I + 1*HEIGHT*WIDTH;
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[1];
+          p_input[j*HEIGHT+i] = p[1];
       }
     p_input = I;
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[2];
+          p_input[j*HEIGHT+i] = p[2];
       }      
     
     float *M = new float[HEIGHT*WIDTH], *O = new float[HEIGHT*WIDTH];
@@ -692,19 +692,19 @@ void fhog31(cv::MatND &fhog_feature, const cv::Mat& input, cv::Mat& tmp1, cv::Ma
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[0];
+          p_input[j*HEIGHT+i] = p[0];
       }
     p_input = I + 1*HEIGHT*WIDTH;
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[1];
+          p_input[j*HEIGHT+i] = p[1];
       }
     p_input = I;
     for (int j = 0; j < WIDTH; j++)
       for (int i = 0; i < HEIGHT; i++) {
           cv::Vec3b p = input.at<cv::Vec3b>(i,j);
-          p_input[j*WIDTH+i] = p[2];
+          p_input[j*HEIGHT+i] = p[2];
       }    
 
     float *M = new float[HEIGHT*WIDTH], *O = new float[HEIGHT*WIDTH];
