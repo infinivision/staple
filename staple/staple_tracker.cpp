@@ -62,6 +62,7 @@ bool STAPLE_TRACKER::importWisdom(std::string &file){
 }
 
 // string STAPLE_TRACKER::wisdomFile = STAPLE_TRACKER::importWisdom();
+string STAPLE_TRACKER::wisdomFile = "wisdom";
 
 void STAPLE_TRACKER::clearWisdom(){
     fftwf_forget_wisdom();
