@@ -64,6 +64,9 @@ int main(int argc, char * argv[])
   FileStorage fs(cfgPath,FileStorage::READ);
   staple_cfg cfg;
   cfg.read(fs.root());
+
+  STAPLE_TRACKER::importWisdom();
+
   STAPLE_TRACKER staple(cfg);
   // initialize the tracker
   int64 t1 = cv::getTickCount();

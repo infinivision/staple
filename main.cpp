@@ -47,11 +47,19 @@ int main(int argc, char * argv[])
   }
 
   Mat frame;
+  Mat show_frame;
   // get bounding box
   cap >> frame;
   //cv::namedWindow("tracker",WINDOW_NORMAL);
   //cv::resizeWindow("tracker",800,640);
-  Rect_<float> roi= selectROI("tracker", frame, true, false);
+  cv::resize(frame,show_frame,cv::Size(1024,768));
+  Rect_<float> roi= selectROI("tracker", show_frame, true, false);
+
+  roi.x = roi.x / 1024.0 * frame.cols;
+  roi.y = roi.y / 768.0 * frame.rows;
+  roi.width   = roi.width  / 1024.0 * frame.cols;
+  roi.height  = roi.height / 768.0 * frame.rows;
+
   //quit if ROI was not selected
   if(roi.width==0 || roi.height==0)
     return 0;
@@ -70,9 +78,13 @@ int main(int argc, char * argv[])
   FileStorage fs(cfgPath, FileStorage::READ);
   staple_cfg cfg;
   cfg.read(fs.root());
+
+  STAPLE_TRACKER::importWisdom();
+
   STAPLE_TRACKER staple(cfg);
   // initialize the tracker
   int64 t1 = cv::getTickCount();
+
 
   staple.tracker_staple_initialize(frame, roi);
   staple.tracker_staple_train(frame, true);  
@@ -135,7 +147,8 @@ int main(int argc, char * argv[])
     text = buffer;
     putText(frame, text, Point(20,35), FONT_HERSHEY_PLAIN, 1.25, Scalar(0,0,0),2);    
     // show image with the tracked object
-    imshow("tracker",frame);
+    cv::resize(frame,show_frame,cv::Size(1024,768));
+    imshow("tracker",show_frame);
 
   }
 

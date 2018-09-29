@@ -14,17 +14,24 @@
 #include "fhog.h"
 #include "staple_tracker.hpp"
 #include <iomanip>
+#include <mutex>
+
+std::mutex fftw_plan_mutex;
 
 STAPLE_TRACKER::STAPLE_TRACKER(){ 
     cfg = default_parameters_staple(cfg); 
     frameno = 0; 
+    fftw_plan_mutex.lock();
     fftwInit(cfg.fftw_window_len,cfg.fftw_window_len,28);
+    fftw_plan_mutex.unlock();
 };
 
 STAPLE_TRACKER::STAPLE_TRACKER(staple_cfg & cfg_){ 
     cfg = cfg_; 
     frameno = 0; 
+    fftw_plan_mutex.lock();
     fftwInit(cfg.fftw_window_len,cfg.fftw_window_len,28);
+    fftw_plan_mutex.unlock();
 };
 
 STAPLE_TRACKER::~STAPLE_TRACKER(){
